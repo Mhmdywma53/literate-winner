@@ -1,22 +1,17 @@
 name: All Builds (Linux, macOS, Windows, Android, IPA, APK, AAB)
 
 on:
-  # Runs on push to any of the below branches
   push:
     branches:
       - master
       - main
-  # Runs on pull request events that target one of the below branches
   pull_request:
     branches:
       - master
       - main
-
-  # Allows you to run this workflow manually from the Actions tab of the repository
   workflow_dispatch:
 
 env:
-  # https://flet.dev/docs/publish#versioning
   BUILD_NUMBER: 1
   BUILD_VERSION: 1.0.0
   PYTHON_VERSION: 3.12.2
@@ -157,6 +152,9 @@ jobs:
       with:
         flutter-version: ${{ env.FLUTTER_VERSION }}
 
+    - name: Accept Android SDK Licenses
+      run: yes | flutter doctor --android-licenses
+
     - name: Flet Build AAB
       run: |
         flutter config --no-analytics
@@ -191,6 +189,9 @@ jobs:
       uses: subosito/flutter-action@v2
       with:
         flutter-version: ${{ env.FLUTTER_VERSION }}
+
+    - name: Accept Android SDK Licenses
+      run: yes | flutter doctor --android-licenses
 
     - name: Setup Java JDK
       uses: actions/setup-java@v4.2.1
@@ -233,6 +234,21 @@ jobs:
       with:
         flutter-version: ${{ env.FLUTTER_VERSION }}
 
+    - name: Setup keychain
+      run: |
+        security create-keychain -p "" build.keychain
+        security list-keychains -s build.keychain
+        security unlock-keychain -p "" build.keychain
+        security set-keychain-settings
+        security import ./path_to_certificate.p12 -P "your_password" -A
+        security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+      shell: bash
+
+    - name: Setup Provisioning Profile
+      run: |
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        cp "./path_to_profile.mobileprovision" ~/Library/MobileDevice/Provisioning\ Profiles/
+
     - name: Flet Build IPA
       run: |
         flutter config --no-analytics
@@ -244,4 +260,4 @@ jobs:
         name: ipa-build-artifact
         path: build/ipa
         if-no-files-found: warn
-        overwrite: fals
+        overwrite: false
