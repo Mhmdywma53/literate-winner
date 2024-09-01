@@ -49,10 +49,12 @@ jobs:
 
     - name: Install Flet dependencies
       run: |
+        cd path/to/your/flutter/project
         flutter pub get
 
     - name: Flet Build APK
       run: |
+        cd path/to/your/flutter/project
         flutter config --no-analytics
         flet build apk --verbose --build-number=$BUILD_NUMBER --build-version=$BUILD_VERSION
 
@@ -60,6 +62,6 @@ jobs:
       uses: actions/upload-artifact@v4.3.4
       with:
         name: apk-build-artifact
-        path: build/apk
+        path: path/to/your/flutter/project/build/apk
         if-no-files-found: warn
         overwrite: false
